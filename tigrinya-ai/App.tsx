@@ -38,7 +38,7 @@ The user spoke in Tigrinya. Respond ONLY with this exact format and nothing else
 [Response]: <Tigrinya script here>
 [Speak]: <phonetics here — ${PHONETIC_RULES}>`;
 
-const GEN_CONFIG = { maxOutputTokens: 400, thinkingConfig: { thinkingBudget: 0 } };
+const GEN_CONFIG = { maxOutputTokens: 800, thinkingConfig: { thinkingBudget: 1024 } };
 
 type Message = {
   role: 'user' | 'ai';
@@ -84,7 +84,8 @@ async function askGemini(
   if (!res.ok) throw new Error(`Gemini error: ${await res.text()}`);
 
   const json = await res.json();
-  const text: string = json.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const parts = json.candidates?.[0]?.content?.parts ?? [];
+  const text: string = parts.find((p: any) => !p.thought)?.text ?? '';
 
   const heardMatch    = text.match(/\[What you heard\]:\s*(.+?)(?=\[Response\]|$)/s);
   const responseMatch = text.match(/\[Response\]:\s*(.+?)(?=\[Speak\]|$)/s);
@@ -130,7 +131,8 @@ Respond ONLY with this exact format and nothing else:
   if (!res.ok) throw new Error(`Gemini error: ${await res.text()}`);
 
   const json = await res.json();
-  const text: string = json.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const parts = json.candidates?.[0]?.content?.parts ?? [];
+  const text: string = parts.find((p: any) => !p.thought)?.text ?? '';
 
   const responseMatch = text.match(/\[Response\]:\s*(.+?)(?=\[Speak\]|$)/s);
   const speakMatch    = text.match(/\[Speak\]:\s*(.+)/s);
